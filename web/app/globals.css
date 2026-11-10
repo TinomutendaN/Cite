@@ -1,34 +1,58 @@
+/* Cite design rules (see CLAUDE.md). */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  /* Font */
+  --font: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+  /* Text */
+  --text: #242424;
+  --text-secondary: #3a3532;
+  --text-secondary-2: #4a4440;
+  --text-label: #6b5b4b;
 
-html {
-  height: 100%;
-}
+  /* Orange accent */
+  --orange: #cc8d51;
+  --orange-light: #e1a46b;
+  --orange-highlight: #f0d3b3;
+  --on-orange: #1f1a16;
 
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
+  /* Dark panels */
+  --dark: #2b2b2b;
+  --dark-inner: #3a3a3a;
+  --dark-inner-border: #4a4a4a;
 
-body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  /* Misc */
+  --folder: #f5c542;
+  --success-bg: #d6eadc;
+  --success-text: #1f3d2b;
+  --white: #ffffff;
+
+  /* Landing */
+  --landing-bg: #f2eee5;
+  --landing-bar: #fbf9f4;
+  --landing-bar-border: #e4ded2;
+
+  /* App background (all screens except landing) */
+  --app-bg-color: #ddd3cd;
+  --app-bg-image:
+    radial-gradient(circle at 12% 8%, rgba(255, 255, 255, 0.55), transparent 42%),
+    radial-gradient(circle at 92% 50%, rgba(255, 255, 255, 0.4), transparent 38%),
+    radial-gradient(ellipse at 50% 105%, rgba(120, 100, 85, 0.16), transparent 55%),
+    linear-gradient(160deg, #e9e3de, #d5cac3);
+
+  /* Glass card */
+  --glass-bg: rgba(255, 255, 255, 0.34);
+  --glass-blur: blur(18px) saturate(150%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.65);
+  --glass-shadow: 0 8px 24px rgba(60, 40, 30, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+
+  /* Shape and spacing */
+  --radius-card: 18px;
+  --radius-card-sm: 16px;
+  --radius-button: 12px;
+  --space: 24px;
+  --tap: 44px;
 }
 
 * {
@@ -37,13 +61,86 @@ body {
   margin: 0;
 }
 
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  color: var(--text);
+  background: var(--landing-bg);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Frosted-glass card used for all light cards on app screens. */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: var(--radius-card);
+}
+
+/* Small uppercase label. */
+.label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-label);
+}
+
+.btn-primary,
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 0 18px;
+  border-radius: var(--radius-button);
+  font-size: 15px;
+  font-weight: 500;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--orange);
+  color: var(--on-orange);
+}
+
+.btn-primary:hover {
+  background: var(--orange-light);
+}
+
+.btn-secondary {
+  background: var(--white);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(60, 40, 30, 0.08);
+}
+
+:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 2px;
 }

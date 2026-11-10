@@ -80,6 +80,7 @@ cite/
 ## Deployment rules (Vercel)
 
 - Nothing is kept in memory between requests. Usage counts, the query log and the model choice always live in Postgres, never in a Python variable or a file.
+- The database has 5 tables: documents, chunks, queries, usage, and settings (holds the model choice).
 - The browser only calls `/api/...` on the frontend address. The rewrite in `web/next.config.js` forwards it to the local api in development and to the backend project's URL in production, so FastAPI needs no CORS setup.
 - The deployed backend uses Neon's pooled connection string.
 - If Vercel doesn't find the FastAPI app automatically, set `tool.vercel.entrypoint` in `api/pyproject.toml`.

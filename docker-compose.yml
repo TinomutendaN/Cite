@@ -1,0 +1,54 @@
+# Local development only. Vercel does not use this file.
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cite}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cite}
+      POSTGRES_DB: ${POSTGRES_DB:-cite}
+    ports:
+      # Host port 5433 avoids clashing with a locally installed Postgres on 5432.
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs once, when the volume is first created.
+      - ./api/app/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cite} -d ${POSTGRES_DB:-cite}"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: ./api
+    env_file: .env
+    environment:
+      # Inside Compose the database is reached by its service name.
+      DATABASE_URL: postgresql://${POSTGRES_USER:-cite}:${POSTGRES_PASSWORD:-cite}@db:5432/${POSTGRES_DB:-cite}
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./api:/app
+      - ./data:/data:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build: ./web
+    environment:
+      # The /api rewrite runs inside this container, so it uses the service name.
+      API_URL: http://api:8000
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - api
+
+volumes:
+  pgdata:

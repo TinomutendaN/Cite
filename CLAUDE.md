@@ -98,6 +98,7 @@ cite/
 ## Vercel rules
 
 - Nothing is kept in memory between requests. Usage counts, the query log and the model choice always live in Postgres, never in a Python variable or a file.
+- The database has 5 tables: documents, chunks, queries, usage, and settings (holds the model choice).
 - The browser only calls `/api/...` on the frontend address. The rewrite in `next.config.js` forwards it to the backend, so FastAPI needs no CORS setup.
 - The deployed backend uses Neon's pooled connection string.
 - The daily cap identifies visitors by IP from the request headers; if that proves unreliable behind the rewrite, use an anonymous ID cookie instead.

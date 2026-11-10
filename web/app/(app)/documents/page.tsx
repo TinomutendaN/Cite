@@ -1,10 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { MoreVertical, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import DocumentTree from "@/components/DocumentTree";
 import DocumentViewer from "@/components/DocumentViewer";
+import MoreMenu from "@/components/MoreMenu";
 import ResultCard from "@/components/ResultCard";
 import { orderDocuments } from "@/constants/documents";
 import { useDocuments } from "@/hooks/useDocuments";
@@ -147,7 +148,13 @@ function DocumentsScreen() {
       <aside className={styles.side} aria-label="Sample documents">
         <div className={`glass ${styles.sideTitle}`}>
           <h2>Sample documents</h2>
-          <FolderMenu onOpenAll={folders.openAll} onCloseAll={folders.closeAll} />
+          <MoreMenu
+            label="Folder options"
+            items={[
+              { label: "Open all folders", onSelect: folders.openAll },
+              { label: "Close all folders", onSelect: folders.closeAll },
+            ]}
+          />
         </div>
         <div className={`glass ${styles.treeCard}`}>
           {documents.data ? (
@@ -164,58 +171,6 @@ function DocumentsScreen() {
           )}
         </div>
       </aside>
-    </div>
-  );
-}
-
-/** The ⋮ button on the "Sample documents" card: open or close every folder. */
-function FolderMenu({ onOpenAll, onCloseAll }: { onOpenAll: () => void; onCloseAll: () => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointer = (e: PointerEvent) => {
-      if (!ref.current?.contains(e.target as Node)) setOpen(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    document.addEventListener("pointerdown", onPointer);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("pointerdown", onPointer);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  const pick = (action: () => void) => () => {
-    action();
-    setOpen(false);
-  };
-
-  return (
-    <div className={styles.menuWrap} ref={ref}>
-      <button
-        type="button"
-        className={styles.menuButton}
-        aria-label="Folder options"
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((o) => !o)}
-      >
-        <MoreVertical size={18} aria-hidden />
-      </button>
-      {open && (
-        <div className={styles.menu} role="menu">
-          <button type="button" role="menuitem" className={styles.menuItem} onClick={pick(onOpenAll)}>
-            Open all folders
-          </button>
-          <button type="button" role="menuitem" className={styles.menuItem} onClick={pick(onCloseAll)}>
-            Close all folders
-          </button>
-        </div>
-      )}
     </div>
   );
 }

@@ -157,8 +157,14 @@ def chat_stream(provider: str, system: str, user: str) -> Generator[str, None, C
     return ChatResult("".join(parts), input_tokens, output_tokens, model)
 
 
-def chat(provider: str, system: str, user: str) -> ChatResult:
-    """Send one system + user message to the provider and return its text reply and token use."""
+def chat(provider: str, system: str, user: str, json_schema: dict | None = None) -> ChatResult:
+    """Send one system + user message to the provider and return its text reply and token use.
+
+    With json_schema (a strict-compatible JSON Schema: every object has all its properties
+    required and additionalProperties false), the reply is JSON held to that schema:
+    structured output on OpenAI and Anthropic, plain JSON mode on Ollama (the schema is
+    then only guidance, so callers must still validate the reply).
+    """
     model = model_for(provider)
 
     if provider == "anthropic":
@@ -172,7 +178,9 @@ def chat(provider: str, system: str, user: str) -> ChatResult:
             max_tokens=MAX_OUTPUT_TOKENS,
             system=system,
             messages=[{"role": "user", "content": user}],
-            output_config={"effort": "low"},
+            output_config={"effort": "low"}
+            if json_schema is None
+            else {"effort": "low", "format": {"type": "json_schema", "schema": json_schema}},
         )
         text = "".join(block.text for block in response.content if block.type == "text")
         return ChatResult(text, response.usage.input_tokens, response.usage.output_tokens, model)
@@ -191,9 +199,20 @@ def chat(provider: str, system: str, user: str) -> ChatResult:
 
     # No temperature or max_tokens: newer OpenAI models only accept the default
     # temperature, and max_tokens isn't accepted by reasoning models.
+    extra = {}
+    if json_schema is not None:
+        extra["response_format"] = (
+            {"type": "json_object"}  # Ollama: JSON mode only
+            if provider == "ollama"
+            else {
+                "type": "json_schema",
+                "json_schema": {"name": "result", "strict": True, "schema": json_schema},
+            }
+        )
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        **extra,
     )
     usage = response.usage
     return ChatResult(

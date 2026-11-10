@@ -2,11 +2,12 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.db import connect
-from app.routes import admin, ask, documents
+from app.routes import admin, ask, documents, extract
 
 app = FastAPI(title="Cite")
 app.include_router(ask.router)
 app.include_router(documents.router)
+app.include_router(extract.router)
 app.include_router(admin.router)
 
 

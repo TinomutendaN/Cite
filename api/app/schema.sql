@@ -1,5 +1,5 @@
 -- Cite schema. Safe to run more than once (local Docker init and Neon).
--- 5 tables: documents, chunks, queries, usage, settings.
+-- 6 tables: documents, chunks, queries, usage, settings, extractions.
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -76,3 +76,16 @@ CREATE TABLE IF NOT EXISTS settings (
 
 INSERT INTO settings (key, value) VALUES ('provider', 'openai')
 ON CONFLICT (key) DO NOTHING;
+
+-- Contract details pulled out for the Extract page (ContractDetails JSON), saved so
+-- each contract is read by the model once per model. Filled on first request or by
+-- `python -m app.extract --all`.
+CREATE TABLE IF NOT EXISTS extractions (
+    id          bigserial PRIMARY KEY,
+    document_id text NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+    provider    text NOT NULL,
+    model       text NOT NULL,
+    result      jsonb NOT NULL,                 -- ContractDetails
+    created_at  timestamptz NOT NULL DEFAULT now(),
+    UNIQUE (document_id, provider, model)
+);

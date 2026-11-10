@@ -116,7 +116,8 @@ All PDFs are generated the same way (ReportLab, Helvetica only, letter size). Do
 ## Deployment rules (Vercel)
 
 - Nothing is kept in memory between requests. Usage counts, the query log and the model choice always live in Postgres, never in a Python variable or a file.
-- The database has 5 tables: documents, chunks, queries, usage, and settings (holds the model choice).
+- The database has 6 tables: documents, chunks, queries, usage, settings (holds the model choice), and extractions.
+- `extractions` holds the Extract page's results: one saved ContractDetails JSON per contract + model (`document_id, provider, model, result jsonb, created_at`). `POST /api/extract` returns the saved row, or extracts, saves and returns it. Extraction uses the site default provider (not a visitor's own choice) and isn't counted against the free-question limit. A value the contract doesn't state is saved as null and shown as "Not stated".
 - The browser only calls `/api/...` on the frontend address. The rewrite in `web/next.config.js` forwards it to the local api in development and to the backend project's URL in production, so FastAPI needs no CORS setup.
 - The deployed backend uses Neon's pooled connection string.
 - If Vercel doesn't find the FastAPI app automatically, set `tool.vercel.entrypoint` in `api/pyproject.toml`.
@@ -132,4 +133,5 @@ Every screen follows the Cite design rules: Helvetica, a warm beige background, 
 - Check how the documents are split, without calling OpenAI or the database: `docker compose exec api python -m app.ingest --dry-run` (flags any passage over 250 words)
 - Load the sample documents locally (after the database is up; safe to re-run): `docker compose exec api python -m app.ingest`
 - Load the sample documents into Neon (safe to re-run): `docker compose exec -e DATABASE_URL="<neon direct string>" api python -m app.ingest`. Use Neon's direct (non-pooled) connection string for this bulk load; the deployed app uses the pooled one.
+- Pre-fill the Extract page's results for every contract (after ingest; already-saved ones are skipped, and it adds the extractions table if missing): `docker compose exec api python -m app.extract --all`. For Neon: `docker compose exec -e DATABASE_URL="<neon direct string>" api python -m app.extract --all`. Add `--force` to re-extract saved ones (e.g. after changing the prompt or the default model).
 - Deploy: push to GitHub; both Vercel projects deploy automatically

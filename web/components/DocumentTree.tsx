@@ -14,10 +14,21 @@ interface DocumentTreeProps {
   activeId?: string;
   /** Show only this many documents per folder (the folder shows its full count). Omit to show all. */
   previewCount?: number;
+  /** Where each document links to. Defaults to reading it on the Documents page. */
+  hrefFor?: (doc: DocumentSummary) => string;
 }
 
-/** Documents grouped into collapsible folders (categories), each linking to the Documents page. */
-export default function DocumentTree({ documents, open, onToggle, activeId, previewCount }: DocumentTreeProps) {
+const readHref = (d: DocumentSummary) => documentHref(d.id);
+
+/** Documents grouped into collapsible folders (categories), each linking to the Documents page (or `hrefFor`). */
+export default function DocumentTree({
+  documents,
+  open,
+  onToggle,
+  activeId,
+  previewCount,
+  hrefFor = readHref,
+}: DocumentTreeProps) {
   return (
     <ul className={styles.tree}>
       {CATEGORIES.map(({ id, label }) => {
@@ -48,7 +59,7 @@ export default function DocumentTree({ documents, open, onToggle, activeId, prev
               {shown.map((d) => (
                 <li key={d.id}>
                   <Link
-                    href={documentHref(d.id)}
+                    href={hrefFor(d)}
                     className={cn(styles.doc, d.id === activeId && styles.active)}
                     aria-current={d.id === activeId ? "page" : undefined}
                     title={d.title}

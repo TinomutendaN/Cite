@@ -1,6 +1,6 @@
 """Request and response shapes. Mirrored in web/types/api.ts; keep the two in sync."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -125,6 +125,75 @@ class AdminQueriesResponse(BaseModel):
     """GET /api/admin/queries: this visitor's latest questions, newest first."""
 
     queries: list[AdminQuery]
+
+
+# --- Contract extraction (Extract page) ------------------------------------------------
+# Every field carries the page it was found on. A value the contract doesn't state is
+# None, and its page is None too. Nothing is inferred.
+
+
+class Party(BaseModel):
+    name: str
+    role: str | None  # as the contract names it, e.g. "supplier", "customer"
+    page: int | None
+
+
+class DateField(BaseModel):
+    value: date | None  # only when the contract gives an actual date
+    as_written: str | None  # the contract's own wording, e.g. "24 months from the Effective Date"
+    page: int | None
+
+
+class PaymentTerms(BaseModel):
+    summary: str | None
+    due_days: int | None
+    late_interest: str | None
+    page: int | None
+
+
+class Renewal(BaseModel):
+    summary: str | None
+    automatic: bool | None
+    term_months: int | None
+    notice_days: int | None
+    page: int | None
+
+
+class ContractFields(BaseModel):
+    """What the model returns (see extract.py for the JSON schema it is held to)."""
+
+    parties: list[Party]
+    start_date: DateField
+    end_date: DateField
+    payment_terms: PaymentTerms
+    renewal: Renewal
+
+
+class ContractDetails(BaseModel):
+    """What is saved and shown. document_id and contract are set by the server, not the model."""
+
+    document_id: str
+    contract: str  # the document title
+    parties: list[Party]
+    start_date: DateField
+    end_date: DateField
+    payment_terms: PaymentTerms
+    renewal: Renewal
+
+
+class ExtractRequest(BaseModel):
+    document_id: str = Field(min_length=1, max_length=64)
+
+    model_config = {"str_strip_whitespace": True}
+
+
+class ExtractResponse(BaseModel):
+    """POST /api/extract: the saved details for a contract (extracted on first request)."""
+
+    provider: Provider
+    model: str
+    created_at: datetime
+    details: ContractDetails
 
 
 class LimitError(BaseModel):

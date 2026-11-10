@@ -1,0 +1,52 @@
+.wrap {
+  position: relative;
+}
+
+.button {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 10px;
+  color: var(--text);
+}
+
+.button:hover,
+.button[aria-expanded="true"] {
+  background: rgba(120, 100, 90, 0.08);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: var(--radius-button);
+  background: var(--white);
+  box-shadow: 0 10px 24px rgba(60, 40, 30, 0.16);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.item:hover:not(:disabled) {
+  background: rgba(120, 100, 90, 0.08);
+}
+
+.item:disabled {
+  color: var(--text-label);
+  cursor: default;
+  opacity: 0.6;
+}

@@ -136,6 +136,60 @@ export interface SearchResponse {
   results: SearchHit[];
 }
 
+// --- Contract extraction (Extract page) ---------------------------------------------
+// Every field carries the page it was found on. A value the contract doesn't state is
+// null, and its page is null too.
+
+export interface Party {
+  name: string;
+  /** As the contract names it, e.g. "Supplier". */
+  role: string | null;
+  page: number | null;
+}
+
+export interface DateField {
+  /** YYYY-MM-DD, only when the contract gives an actual date. */
+  value: string | null;
+  /** The contract's own wording, e.g. "24 months from the Effective Date". */
+  as_written: string | null;
+  page: number | null;
+}
+
+export interface PaymentTerms {
+  summary: string | null;
+  due_days: number | null;
+  late_interest: string | null;
+  page: number | null;
+}
+
+export interface Renewal {
+  summary: string | null;
+  automatic: boolean | null;
+  term_months: number | null;
+  notice_days: number | null;
+  page: number | null;
+}
+
+/** The saved extraction. document_id and contract (the title) are set by the server. */
+export interface ContractDetails {
+  document_id: string;
+  contract: string;
+  parties: Party[];
+  start_date: DateField;
+  end_date: DateField;
+  payment_terms: PaymentTerms;
+  renewal: Renewal;
+}
+
+/** POST /api/extract {document_id}: the saved details (extracted on first request). Not counted against the daily limit. */
+export interface ExtractResponse {
+  provider: Provider;
+  model: string;
+  /** ISO timestamp. */
+  created_at: string;
+  details: ContractDetails;
+}
+
 /** Body of a 429 response from POST /api/ask. */
 export interface LimitError {
   error: "visitor_limit" | "daily_cap";

@@ -12,16 +12,19 @@ interface DocumentTreeProps {
   onToggle: (category: Category) => void;
   /** The document being read, highlighted. */
   activeId?: string;
+  /** Show only this many documents per folder (the folder shows its full count). Omit to show all. */
+  previewCount?: number;
 }
 
 /** Documents grouped into collapsible folders (categories), each linking to the Documents page. */
-export default function DocumentTree({ documents, open, onToggle, activeId }: DocumentTreeProps) {
+export default function DocumentTree({ documents, open, onToggle, activeId, previewCount }: DocumentTreeProps) {
   return (
     <ul className={styles.tree}>
       {CATEGORIES.map(({ id, label }) => {
         const docs = documents.filter((d) => d.category === id);
         if (docs.length === 0) return null;
         const isOpen = open.has(id);
+        const shown = previewCount === undefined ? docs : docs.slice(0, previewCount);
         const listId = `folder-${id}`;
 
         return (
@@ -35,14 +38,14 @@ export default function DocumentTree({ documents, open, onToggle, activeId }: Do
             >
               <Folder size={16} fill="currentColor" strokeWidth={0} aria-hidden className={styles.folderIcon} />
               {label}
-              {!isOpen && (
+              {(!isOpen || shown.length < docs.length) && (
                 <span className={styles.count} aria-label={`${docs.length} documents`}>
                   {docs.length}
                 </span>
               )}
             </button>
             <ul id={listId} hidden={!isOpen}>
-              {docs.map((d) => (
+              {shown.map((d) => (
                 <li key={d.id}>
                   <Link
                     href={documentHref(d.id)}

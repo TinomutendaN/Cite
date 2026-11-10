@@ -13,10 +13,7 @@ import { useAsk } from "@/hooks/useAsk";
 import { useDocuments } from "@/hooks/useDocuments";
 import { useFolders } from "@/hooks/useFolders";
 import { useUsage } from "@/hooks/useUsage";
-import type { Category } from "@/types/api";
 import styles from "./page.module.css";
-
-const FIT_FALLBACK: Category[] = ["contracts", "patient-materials"];
 
 export default function AskPage() {
   const { messages, openSource, setOpenSource } = useChat();
@@ -24,11 +21,7 @@ export default function AskPage() {
   const { usage, model } = useUsage();
   const documents = useDocuments();
   const listRef = useRef<HTMLDivElement>(null);
-  const treeCardRef = useRef<HTMLDivElement>(null);
-  // Every folder open if they fit in the column, otherwise the two short ones.
-  const folders = useFolders("all", {
-    fit: { ref: treeCardRef, ready: Boolean(documents.data), fallback: FIT_FALLBACK },
-  });
+  const folders = useFolders("all");
 
   const firstQuestion = messages.find((m) => m.kind === "user");
   const title = firstQuestion?.kind === "user" ? firstQuestion.text : "New chat";
@@ -121,9 +114,14 @@ export default function AskPage() {
             <div className={`glass ${styles.sideTitle}`}>
               <h2>Sample documents</h2>
             </div>
-            <div className={`glass ${styles.treeCard}`} ref={treeCardRef}>
+            <div className={`glass ${styles.treeCard}`}>
               {documents.data ? (
-                <DocumentTree documents={documents.data} open={folders.open} onToggle={folders.toggle} />
+                <DocumentTree
+                  documents={documents.data}
+                  open={folders.open}
+                  onToggle={folders.toggle}
+                  previewCount={2}
+                />
               ) : (
                 <p className={styles.status}>
                   {documents.error ? "Couldn't load the documents." : "Loading documents…"}

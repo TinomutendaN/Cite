@@ -62,7 +62,7 @@
   color: var(--text-secondary);
 }
 
-/* Number of documents in a closed folder. */
+/* Number of documents in a folder that is closed or shows only some. */
 .count {
   margin-left: -8px;
   font-size: 13px;

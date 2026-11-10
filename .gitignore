@@ -221,6 +221,6 @@ __marimo__/
 
 # Cite
 pgdata/
-data/
+/data/
 web/.next/
 web/node_modules/

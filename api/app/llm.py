@@ -2,10 +2,12 @@
 
 embed() is shared by ingest (passages) and search (questions), so both always
 use the same EMBEDDING_MODEL, whichever provider writes the answers.
-chat() is the one "ask a model" function for all three answer providers.
+chat() is the one "ask a model" function for all three answer providers;
+chat_stream() is the same call, yielding the reply as it is written.
 """
 
 import logging
+from collections.abc import Generator
 from dataclasses import dataclass
 
 from anthropic import Anthropic
@@ -98,6 +100,61 @@ def resolve_provider(conn, requested: str | None) -> str:
 
 def model_for(provider: str) -> str:
     return {"openai": OPENAI_MODEL, "anthropic": ANTHROPIC_MODEL, "ollama": OLLAMA_MODEL}[provider]
+
+
+def chat_stream(provider: str, system: str, user: str) -> Generator[str, None, ChatResult]:
+    """Like chat(), but yields the reply's text as it arrives.
+
+    The generator's return value (StopIteration.value) is the full ChatResult with token use.
+    """
+    model = model_for(provider)
+    parts: list[str] = []
+
+    if provider == "anthropic":
+        if not ANTHROPIC_API_KEY:
+            raise RuntimeError("ANTHROPIC_API_KEY is not set")
+        client = Anthropic(api_key=ANTHROPIC_API_KEY, timeout=TIMEOUT_SECONDS)
+        with client.messages.stream(
+            model=model,
+            max_tokens=MAX_OUTPUT_TOKENS,
+            system=system,
+            messages=[{"role": "user", "content": user}],
+            output_config={"effort": "low"},
+        ) as stream:
+            for text in stream.text_stream:  # only visible text; thinking is not streamed
+                parts.append(text)
+                yield text
+            usage = stream.get_final_message().usage
+        return ChatResult("".join(parts), usage.input_tokens, usage.output_tokens, model)
+
+    if provider == "openai":
+        if not OPENAI_API_KEY:
+            raise RuntimeError("OPENAI_API_KEY is not set")
+        client = OpenAI(api_key=OPENAI_API_KEY, timeout=TIMEOUT_SECONDS)
+    elif provider == "ollama":
+        if not OLLAMA_BASE_URL:
+            raise RuntimeError("OLLAMA_BASE_URL is not set")
+        client = OpenAI(base_url=OLLAMA_BASE_URL, api_key="ollama", timeout=TIMEOUT_SECONDS)
+    else:
+        raise ValueError(f"Unknown provider: {provider}")
+
+    stream = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+        stream=True,
+        stream_options={"include_usage": True},  # token use arrives in the last chunk
+    )
+    input_tokens = output_tokens = 0
+    for chunk in stream:
+        if chunk.usage:
+            input_tokens = chunk.usage.prompt_tokens or 0
+            output_tokens = chunk.usage.completion_tokens or 0
+        if chunk.choices:
+            text = chunk.choices[0].delta.content
+            if text:
+                parts.append(text)
+                yield text
+    return ChatResult("".join(parts), input_tokens, output_tokens, model)
 
 
 def chat(provider: str, system: str, user: str) -> ChatResult:

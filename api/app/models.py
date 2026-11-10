@@ -101,7 +101,9 @@ class AdminSummary(BaseModel):
     """GET /api/admin/summary: site-wide figures for today (the same day as the limits)."""
 
     questions_today: int
-    avg_latency_ms: int | None
+    # Average time until the answer starts to appear (first streamed words).
+    # Only questions recorded since streaming began; None when there are none.
+    avg_first_token_ms: int | None
     cost_today_usd: float
     cap_used: int
     daily_cap: int
@@ -114,7 +116,8 @@ class AdminQuery(BaseModel):
     question: str
     provider: Provider
     model: str
-    latency_ms: int | None
+    first_token_ms: int | None  # until the answer started to appear; None for older rows
+    latency_ms: int | None  # until the full answer was ready
     cost_usd: float
 
 

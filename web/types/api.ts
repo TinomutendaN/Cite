@@ -25,7 +25,7 @@ export interface Source {
   similarity: number;
 }
 
-/** POST /api/ask */
+/** The final line of POST /api/ask's stream (`type: "done"`). */
 export interface AskResponse {
   answer: string;
   found: boolean;
@@ -34,6 +34,16 @@ export interface AskResponse {
   provider: Provider;
   model: string;
 }
+
+/**
+ * POST /api/ask streams JSON lines: "delta" pieces of the answer as it's written
+ * (citations already numbered), then one "done" with the final text and sources,
+ * or one "error". A 429 (limit reached) is a plain JSON LimitError instead.
+ */
+export type AskStreamEvent =
+  | { type: "delta"; text: string }
+  | ({ type: "done" } & AskResponse)
+  | ({ type: "error" } & ApiError);
 
 /** GET /api/usage. `provider` and `model` are the site default; a visitor's own choice overrides it. */
 export interface UsageResponse {
@@ -50,7 +60,8 @@ export interface UsageResponse {
 /** GET /api/admin/summary: site-wide figures for today (UTC, the same day as the limits). */
 export interface AdminSummary {
   questions_today: number;
-  avg_latency_ms: number | null;
+  /** Average time until the answer starts to appear. Null until a streamed answer is recorded today. */
+  avg_first_token_ms: number | null;
   cost_today_usd: number;
   cap_used: number;
   daily_cap: number;
@@ -64,6 +75,9 @@ export interface AdminQuery {
   question: string;
   provider: Provider;
   model: string;
+  /** Until the answer started to appear. Null for questions recorded before streaming. */
+  first_token_ms: number | null;
+  /** Until the full answer was ready. */
   latency_ms: number | null;
   cost_usd: number;
 }

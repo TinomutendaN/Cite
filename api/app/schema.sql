@@ -47,12 +47,15 @@ CREATE TABLE IF NOT EXISTS queries (
     found         boolean NOT NULL DEFAULT true,
     provider      text NOT NULL,                -- 'openai' | 'anthropic' | 'ollama'
     model         text NOT NULL,
-    latency_ms    int,
+    latency_ms    int,                          -- until the full answer was ready
     input_tokens  int,
     output_tokens int,
     cost_usd      numeric(10, 6) NOT NULL DEFAULT 0,
     sources       jsonb NOT NULL DEFAULT '[]'::jsonb
 );
+
+-- Added with streamed answers: time until the first words appeared. Older rows are NULL.
+ALTER TABLE queries ADD COLUMN IF NOT EXISTS first_token_ms int;
 
 CREATE INDEX IF NOT EXISTS queries_created_at_idx ON queries (created_at DESC);
 CREATE INDEX IF NOT EXISTS queries_visitor_idx    ON queries (visitor_hash, created_at DESC);

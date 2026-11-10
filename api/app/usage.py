@@ -121,8 +121,9 @@ def log_query(conn, vh: str, question: str, ans: Answer) -> None:
         conn.execute(
             """
             INSERT INTO queries (visitor_hash, question, answer, found, provider, model,
-                                 latency_ms, input_tokens, output_tokens, cost_usd, sources)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                                 latency_ms, first_token_ms, input_tokens, output_tokens,
+                                 cost_usd, sources)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 vh,
@@ -132,6 +133,7 @@ def log_query(conn, vh: str, question: str, ans: Answer) -> None:
                 ans.provider,
                 ans.model,
                 ans.latency_ms,
+                ans.first_token_ms,
                 ans.input_tokens,
                 ans.output_tokens,
                 round(cost_usd(ans.model, ans.input_tokens, ans.output_tokens), 6),

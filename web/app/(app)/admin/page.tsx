@@ -28,7 +28,7 @@ function formatTotal(usd: number): string {
   return `$${usd > 0 && usd < 0.01 ? usd.toFixed(4) : usd.toFixed(2)}`;
 }
 
-function StatCard({ label, value, caption, icon: Icon }: { label: string; value: string; caption: string; icon: LucideIcon }) {
+function StatCard({ label, value, caption, icon: Icon }: { label: string; value: string; caption?: string; icon: LucideIcon }) {
   return (
     <div className={`glass ${styles.stat}`}>
       <div className={styles.statTop}>
@@ -38,7 +38,7 @@ function StatCard({ label, value, caption, icon: Icon }: { label: string; value:
         </span>
       </div>
       <span className={styles.statValue}>{value}</span>
-      <span className={styles.statCaption}>{caption}</span>
+      {caption && <span className={styles.statCaption}>{caption}</span>}
     </div>
   );
 }
@@ -67,8 +67,7 @@ export default function AdminPage() {
           />
           <StatCard
             label="Average response time"
-            value={summary ? formatSpeed(summary.avg_latency_ms) : dash}
-            caption="From question to full answer"
+            value={summary ? formatSpeed(summary.avg_first_token_ms) : dash}
             icon={Clock}
           />
           <StatCard
@@ -109,7 +108,16 @@ export default function AdminPage() {
                           {PROVIDERS[q.provider].adminLabel}
                         </span>
                       </td>
-                      <td className={styles.num}>{formatSpeed(q.latency_ms)}</td>
+                      <td
+                        className={styles.num}
+                        title={
+                          q.first_token_ms === null
+                            ? "Asked before answers were streamed"
+                            : `Started to appear after ${formatSpeed(q.first_token_ms)}; full answer after ${formatSpeed(q.latency_ms)}`
+                        }
+                      >
+                        {formatSpeed(q.first_token_ms)}
+                      </td>
                       <td className={styles.num}>{formatRowCost(q)}</td>
                     </tr>
                   ))}

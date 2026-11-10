@@ -30,11 +30,15 @@ export default function AskPage() {
   const openSources = openAnswer?.kind === "answer" ? openAnswer.sources : [];
   const shownSource = openSources.find((s) => s.n === openSource?.n);
 
-  // Keep the newest message in view.
+  const last = messages[messages.length - 1];
+  const streaming = last?.kind === "answer" && last.streaming === true;
+  const lastLength = last && "text" in last ? last.text.length : 0;
+
+  // Keep the newest message in view, also while an answer streams in.
   useEffect(() => {
     const list = listRef.current;
-    if (list) list.scrollTo({ top: list.scrollHeight, behavior: "smooth" });
-  }, [messages.length, isLoading]);
+    if (list) list.scrollTo({ top: list.scrollHeight, behavior: streaming ? "auto" : "smooth" });
+  }, [messages.length, isLoading, lastLength, streaming]);
 
   const placeholder = outOfQuestions
     ? "You've used today's free questions."
@@ -87,7 +91,7 @@ export default function AskPage() {
                   retryDisabled={isLoading || outOfQuestions}
                 />
               ))}
-              {isLoading && <ThinkingBubble />}
+              {isLoading && !streaming && <ThinkingBubble />}
             </>
           )}
         </div>

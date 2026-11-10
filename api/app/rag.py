@@ -8,16 +8,20 @@
    them and cite them as [1], [2], or reply exactly NOT_FOUND.
 4. Keep only the passages actually cited, renumbered 1, 2, 3 in the order they
    are first cited, and rewrite the citations in the text to match.
+
+answer_stream() passes the answer on as the model writes it (already
+renumbered); answer() waits for the whole thing.
 """
 
 import re
 import time
+from collections.abc import Generator
 from contextlib import nullcontext
 from dataclasses import asdict, dataclass, field
 
 from app.config import RAG_MIN_SIMILARITY, RAG_TOP_K
 from app.db import connect
-from app.llm import chat, get_provider, model_for
+from app.llm import chat_stream, get_provider, model_for
 from app.search import SearchResult, hybrid_search
 
 NOT_FOUND_TEXT = "I couldn't find this in the documents."
@@ -34,6 +38,8 @@ Rules:
 
 # [1]  [1][2]  [1, 2]  [1,2,3]
 CITATION_RE = re.compile(r"\[(\d+(?:\s*,\s*\d+)*)\]")
+# An unfinished citation at the very end of streamed text, e.g. "[" or "[1, 2".
+PARTIAL_CITATION_RE = re.compile(r"\[[\d,\s]*$")
 
 
 @dataclass
@@ -45,7 +51,8 @@ class Answer:
     model: str
     input_tokens: int = 0
     output_tokens: int = 0
-    latency_ms: int = 0
+    latency_ms: int = 0  # until the full answer was ready
+    first_token_ms: int = 0  # until the first words could be shown (the whole reply, if not streamed)
     gated: bool = False  # True when "not found" was decided without calling the model
     uncited: bool = False  # True when the model answered but cited no valid passage
     passages: list[SearchResult] = field(default_factory=list)  # everything retrieved
@@ -61,8 +68,39 @@ def build_user_message(question: str, passages: list[SearchResult]) -> str:
     return f"Question: {question}\n\nPassages:\n\n" + "\n\n".join(blocks)
 
 
+def _normalise(text: str) -> str:
+    return text.strip().strip("\"'`*.").strip().upper()
+
+
 def is_not_found(text: str) -> bool:
-    return text.strip().strip("\"'`*.").strip().upper() == NOT_FOUND_TOKEN
+    return _normalise(text) == NOT_FOUND_TOKEN
+
+
+def could_be_not_found(text: str) -> bool:
+    """True while the reply so far could still turn out to be NOT_FOUND (so nothing is shown yet)."""
+    return NOT_FOUND_TOKEN.startswith(_normalise(text))
+
+
+def replace_citations(text: str, count: int, new_number: dict[int, int]) -> str:
+    """Rewrite each citation in `text` to its new number, given in order of first appearance.
+
+    `new_number` (old -> new) is updated in place, so it can be carried across
+    streamed pieces of one answer. Numbers outside 1..count are dropped.
+    """
+
+    def replace(match: re.Match) -> str:
+        out = []
+        for raw in match.group(1).split(","):
+            old = int(raw)
+            if not 1 <= old <= count:
+                continue
+            if old not in new_number:
+                new_number[old] = len(new_number) + 1
+            if new_number[old] not in out:
+                out.append(new_number[old])
+        return "".join(f"[{n}]" for n in out)
+
+    return CITATION_RE.sub(replace, text)
 
 
 def renumber_citations(text: str, count: int) -> tuple[str, list[int]]:
@@ -72,23 +110,7 @@ def renumber_citations(text: str, count: int) -> tuple[str, list[int]]:
     Numbers outside 1..count are dropped.
     """
     new_number: dict[int, int] = {}
-    dropped = False
-
-    def replace(match: re.Match) -> str:
-        nonlocal dropped
-        out = []
-        for raw in match.group(1).split(","):
-            old = int(raw)
-            if not 1 <= old <= count:
-                dropped = True
-                continue
-            if old not in new_number:
-                new_number[old] = len(new_number) + 1
-            if new_number[old] not in out:
-                out.append(new_number[old])
-        return "".join(f"[{n}]" for n in out)
-
-    rewritten = CITATION_RE.sub(replace, text)
+    rewritten = replace_citations(text, count, new_number)
     # Tidy spaces left where an invalid citation was removed.
     rewritten = re.sub(r"[ \t]+([.,;:])", r"\1", rewritten)
     rewritten = re.sub(r"[ \t]{2,}", " ", rewritten).strip()
@@ -112,8 +134,16 @@ def should_skip_model(passages: list[SearchResult]) -> bool:
     return not has_keyword_hit and best_similarity < RAG_MIN_SIMILARITY
 
 
-def answer(question: str, provider: str | None = None, conn=None) -> Answer:
+def answer_stream(question: str, provider: str | None = None, conn=None) -> Generator[str, None, Answer]:
+    """Answer a question, yielding the answer text as it is written.
+
+    The pieces already have their final citation numbers. Nothing is yielded
+    until the reply can no longer be NOT_FOUND, and nothing at all for a
+    "not found" answer. The return value (StopIteration.value) is the finished
+    Answer; its text is the tidied full answer and replaces what was streamed.
+    """
     started = time.perf_counter()
+    first_token_ms: int | None = None
 
     def elapsed_ms() -> int:
         return int((time.perf_counter() - started) * 1000)
@@ -125,35 +155,70 @@ def answer(question: str, provider: str | None = None, conn=None) -> Answer:
     model = model_for(provider)
 
     if should_skip_model(passages):
+        ms = elapsed_ms()
         return Answer(
             text=NOT_FOUND_TEXT,
             found=False,
             sources=[],
             provider=provider,
             model=model,
-            latency_ms=elapsed_ms(),
+            latency_ms=ms,
+            first_token_ms=ms,
             gated=True,
             passages=passages,
         )
 
-    result = chat(provider, SYSTEM_PROMPT, build_user_message(question, passages))
+    raw = ""  # everything the model has written so far
+    sent = 0  # how much of `raw` has been passed on
+    new_number: dict[int, int] = {}
+    stream = chat_stream(provider, SYSTEM_PROMPT, build_user_message(question, passages))
+    while True:
+        try:
+            raw += next(stream)
+        except StopIteration as stop:
+            result = stop.value
+            break
+        if sent == 0 and could_be_not_found(raw):
+            continue
+        # Hold back an unfinished citation until its closing bracket arrives.
+        partial = PARTIAL_CITATION_RE.search(raw, sent)
+        end = partial.start() if partial else len(raw)
+        if end > sent:
+            piece = replace_citations(raw[sent:end], len(passages), new_number)
+            sent = end
+            if piece:
+                if first_token_ms is None:
+                    first_token_ms = elapsed_ms()
+                yield piece
+
+    total_ms = elapsed_ms()
     base = dict(
         provider=provider,
         model=result.model,
         input_tokens=result.input_tokens,
         output_tokens=result.output_tokens,
+        latency_ms=total_ms,
+        first_token_ms=first_token_ms if first_token_ms is not None else total_ms,
         passages=passages,
     )
 
     if is_not_found(result.text):
-        return Answer(text=NOT_FOUND_TEXT, found=False, sources=[], latency_ms=elapsed_ms(), **base)
+        return Answer(text=NOT_FOUND_TEXT, found=False, sources=[], **base)
 
     text, cited = renumber_citations(result.text, len(passages))
     if not cited:
         # Every answer must show its source; an uncited reply counts as not found.
-        return Answer(
-            text=NOT_FOUND_TEXT, found=False, sources=[], latency_ms=elapsed_ms(), uncited=True, **base
-        )
+        return Answer(text=NOT_FOUND_TEXT, found=False, sources=[], uncited=True, **base)
 
     sources = [source_dict(n, passages[i]) for n, i in enumerate(cited, start=1)]
-    return Answer(text=text, found=True, sources=sources, latency_ms=elapsed_ms(), **base)
+    return Answer(text=text, found=True, sources=sources, **base)
+
+
+def answer(question: str, provider: str | None = None, conn=None) -> Answer:
+    """answer_stream() without the streaming: waits for the finished Answer."""
+    stream = answer_stream(question, provider=provider, conn=conn)
+    while True:
+        try:
+            next(stream)
+        except StopIteration as stop:
+            return stop.value

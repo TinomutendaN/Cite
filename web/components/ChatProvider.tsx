@@ -10,7 +10,8 @@ import type { Provider, Source } from "@/types/api";
 
 export type ChatMessage =
   | { id: string; kind: "user"; text: string }
-  | { id: string; kind: "answer"; text: string; sources: Source[] }
+  // `streaming`: still being written; its sources arrive when it's finished.
+  | { id: string; kind: "answer"; text: string; sources: Source[]; streaming?: boolean }
   | { id: string; kind: "not_found" }
   | { id: string; kind: "limit"; text: string }
   | { id: string; kind: "error"; text: string; question: string };

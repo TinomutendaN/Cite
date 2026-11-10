@@ -22,7 +22,7 @@ def summary():
     with connect() as conn:
         count, avg_ms, cost = conn.execute(
             """
-            SELECT count(*), avg(latency_ms), coalesce(sum(cost_usd), 0)
+            SELECT count(*), avg(first_token_ms), coalesce(sum(cost_usd), 0)
             FROM queries
             WHERE created_at >= current_date
             """
@@ -32,7 +32,7 @@ def summary():
         ).fetchone()
     return AdminSummary(
         questions_today=count,
-        avg_latency_ms=round(avg_ms) if avg_ms is not None else None,
+        avg_first_token_ms=round(avg_ms) if avg_ms is not None else None,
         cost_today_usd=float(cost),
         cap_used=cap_used,
         daily_cap=DAILY_QUESTION_CAP,
@@ -45,7 +45,7 @@ def recent_queries(request: Request):
     with connect() as conn:
         rows = conn.execute(
             """
-            SELECT id, created_at, question, provider, model, latency_ms, cost_usd
+            SELECT id, created_at, question, provider, model, first_token_ms, latency_ms, cost_usd
             FROM queries
             WHERE visitor_hash = %s
             ORDER BY created_at DESC
@@ -61,8 +61,9 @@ def recent_queries(request: Request):
                 question=r[2],
                 provider=r[3],
                 model=r[4],
-                latency_ms=r[5],
-                cost_usd=float(r[6]),
+                first_token_ms=r[5],
+                latency_ms=r[6],
+                cost_usd=float(r[7]),
             )
             for r in rows
         ]

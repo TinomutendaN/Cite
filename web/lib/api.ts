@@ -22,6 +22,41 @@ export function apiGet<T>(path: string, signal?: AbortSignal): Promise<T> {
   return request<T>(path, { signal });
 }
 
+/**
+ * POST and read a stream of JSON lines (NDJSON), calling `onEvent` for each line.
+ * A non-2xx response throws ApiRequestError with its JSON body, like apiPost.
+ */
+export async function apiStream<T>(
+  path: string,
+  data: unknown,
+  onEvent: (event: T) => void,
+  signal?: AbortSignal,
+): Promise<void> {
+  const res = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+    cache: "no-store",
+    signal,
+  });
+  if (!res.ok || !res.body) {
+    const body = await res.json().catch(() => null);
+    throw new ApiRequestError(res.status, body);
+  }
+
+  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffered = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffered += value;
+    const lines = buffered.split("\n");
+    buffered = lines.pop() ?? "";
+    for (const line of lines) if (line.trim()) onEvent(JSON.parse(line) as T);
+  }
+  if (buffered.trim()) onEvent(JSON.parse(buffered) as T);
+}
+
 export function apiPost<T>(path: string, data: unknown, signal?: AbortSignal): Promise<T> {
   return request<T>(path, {
     method: "POST",

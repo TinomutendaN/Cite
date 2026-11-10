@@ -37,9 +37,14 @@ export default function ChatMessage({
       );
 
     case "answer":
+      // While streaming, the source tags show but can't open yet: the sources arrive at the end.
       return (
-        <div className={`${styles.bubble} ${styles.answer}`}>
-          <AnswerText text={message.text} activeSource={activeSource} onOpenSource={onOpenSource} />
+        <div className={`${styles.bubble} ${styles.answer}`} aria-busy={message.streaming || undefined}>
+          <AnswerText
+            text={message.text}
+            activeSource={activeSource}
+            onOpenSource={message.streaming ? undefined : onOpenSource}
+          />
           {message.sources[0] && <QuoteBlock source={message.sources[0]} />}
         </div>
       );

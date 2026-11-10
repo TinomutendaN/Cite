@@ -45,6 +45,13 @@
   color: var(--text-secondary);
 }
 
+/* Full number of documents in a folder when only some are listed. */
+.count {
+  margin-left: -8px;
+  font-size: 13px;
+  color: var(--text-label);
+}
+
 .docTitle {
   min-width: 0;
   overflow: hidden;

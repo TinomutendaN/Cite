@@ -114,7 +114,7 @@ export default function AskPage() {
             </div>
             <div className={`glass ${styles.treeCard}`}>
               {documents.data ? (
-                <DocumentTree documents={documents.data} />
+                <DocumentTree documents={documents.data} previewCount={2} />
               ) : (
                 <p className={styles.status}>
                   {documents.error ? "Couldn't load the documents." : "Loading documents…"}

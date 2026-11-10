@@ -127,7 +127,7 @@ function QuoteBlock({ source }: { source: Source }) {
         </span>
         <span className={styles.quoteActions}>
           <Link
-            href={documentHref(source.document_id, source.page)}
+            href={documentHref(source.document_id, source.page, source.chunk_id)}
             className={styles.iconButton}
             aria-label={`Open ${source.title} at page ${source.page}`}
           >

@@ -9,7 +9,7 @@ Cite is a company knowledge assistant demo. It answers staff questions from samp
 - Models: openai SDK (also used for Ollama through its OpenAI-compatible endpoint), anthropic SDK. One embedding model for everything, even when the answer model changes.
 - Deployed on Vercel as two projects from this repo: `web/` (Next.js) and `api/` (FastAPI, runs as a Vercel Function). Database: Neon Postgres with pgvector, added through the Vercel Marketplace.
 - Docker Compose (db, api, web) is for local development only.
-- Dependencies: 5 in Python (fastapi, uvicorn, psycopg, openai, anthropic) and 2 in JavaScript (next with react/react-dom, lucide-react). Keep the total under 10. Ask before adding any new dependency.
+- Dependencies: 6 in Python (fastapi, uvicorn, psycopg, openai, anthropic, pypdf for reading the sample PDFs) and 2 in JavaScript (next with react/react-dom, lucide-react). Keep the total under 10. Ask before adding any new dependency.
 - Do not add: LangChain, Redis, an ORM, Tailwind, a global state library, or charting libraries.
 
 ## Folder structure
@@ -21,10 +21,10 @@ cite/
 ├── docker-compose.yml         # local development only
 ├── .env.example
 ├── data/
-│   └── documents/             # sample company documents, in Markdown
-│       ├── hr/
-│       ├── product/
-│       └── contracts/
+│   └── documents/             # sample company documents, as PDFs (git-ignored)
+│       ├── policies/
+│       ├── contracts/
+│       └── patient-materials/
 ├── api/                       # Vercel project #2
 │   ├── Dockerfile             # local only
 │   ├── pyproject.toml         # tool.vercel.entrypoint, if Vercel doesn't find the app

@@ -7,12 +7,18 @@ CREATE EXTENSION IF NOT EXISTS vector;
 CREATE TABLE IF NOT EXISTS documents (
     id          text PRIMARY KEY,               -- e.g. 'POL-114'
     title       text NOT NULL,
-    category    text NOT NULL CHECK (category IN ('hr', 'product', 'contracts')),
-    doc_type    text NOT NULL,                  -- e.g. 'Policy', 'Manual', 'Contract'
-    path        text NOT NULL,                  -- relative to data/documents
+    category    text NOT NULL,                  -- folder name under data/documents
+    doc_type    text NOT NULL,                  -- e.g. 'Policy', 'Guide', 'Contract'
+    path        text NOT NULL,                  -- PDF path relative to data/documents
     page_count  int  NOT NULL DEFAULT 1,
     created_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- Categories match the folders in data/documents. Dropped and re-added so that
+-- re-running this file also updates databases created with older categories.
+ALTER TABLE documents DROP CONSTRAINT IF EXISTS documents_category_check;
+ALTER TABLE documents ADD CONSTRAINT documents_category_check
+    CHECK (category IN ('policies', 'contracts', 'patient-materials'));
 
 -- Searchable passages. page + paragraph let the UI highlight the exact source.
 CREATE TABLE IF NOT EXISTS chunks (

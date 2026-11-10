@@ -71,6 +71,25 @@ export interface DocumentPage {
   passages: PagePassage[];
 }
 
+/** One passage found by GET /api/search, with a one-sentence snippet to show. */
+export interface SearchHit {
+  chunk_id: number;
+  document_id: string;
+  title: string;
+  page: number;
+  section: string | null;
+  match_type: MatchType;
+  snippet: string;
+  /** [start, end) character offsets into `snippet` to highlight. */
+  highlights: [number, number][];
+}
+
+/** GET /api/search?q=. Not counted against the daily limit. */
+export interface SearchResponse {
+  query: string;
+  results: SearchHit[];
+}
+
 /** Body of a 429 response from POST /api/ask. */
 export interface LimitError {
   error: "visitor_limit" | "daily_cap";

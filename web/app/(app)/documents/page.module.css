@@ -1,0 +1,286 @@
+/* Centre (viewer or results) + right column. The sidebar comes from the (app) layout. */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: var(--space);
+  height: 100%;
+  min-height: calc(100dvh - 2 * var(--space));
+}
+
+.centre {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* --- Header: title + search ------------------------------------------------------ */
+.header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-height: 66px;
+  padding: 0 10px 0 24px;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.search {
+  flex: 0 1 478px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  height: 46px;
+  padding: 0 4px 0 14px;
+  border-radius: var(--radius-button);
+  background: var(--white);
+  box-shadow: 0 1px 2px rgba(60, 40, 30, 0.08);
+}
+
+.searchIcon {
+  flex: none;
+  color: var(--text-secondary-2);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 6px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.input::placeholder {
+  color: #8a7f77;
+}
+
+.search:focus-within {
+  outline: 2px solid var(--orange);
+  outline-offset: 1px;
+}
+
+.clear {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: var(--text);
+}
+
+.clear:hover {
+  background: rgba(120, 100, 90, 0.08);
+}
+
+/* Sits inside the 46px field; the field itself gives the 44px tap height. */
+.submit {
+  flex: none;
+  min-height: 38px;
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 400;
+}
+
+/* --- Results --------------------------------------------------------------------- */
+.results {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: -4px -6px 0;
+  padding: 4px 6px 8px;
+}
+
+.resultsBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding: 0 0 0 6px;
+}
+
+.count {
+  font-size: 15px;
+  color: var(--text);
+}
+
+.key {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.key li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.swatchExact {
+  background: var(--dark);
+}
+
+.swatchMeaning {
+  background: var(--orange-highlight);
+  box-shadow: inset 0 0 0 1px rgba(204, 141, 81, 0.45);
+}
+
+.resultList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.resultList > li {
+  display: flex;
+  flex-direction: column;
+}
+
+.empty {
+  flex: 1;
+  padding: 24px;
+}
+
+.status {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-label);
+}
+
+.results > .status {
+  padding-left: 6px;
+}
+
+/* --- Right column ---------------------------------------------------------------- */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+}
+
+.sideTitle {
+  position: relative;
+  z-index: 2; /* keeps the folder menu above the tree card */
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 58px;
+  padding: 0 7px 0 16px;
+}
+
+.sideTitle h2 {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.menuWrap {
+  position: relative;
+}
+
+.menuButton {
+  display: grid;
+  place-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  border-radius: 10px;
+  color: var(--text);
+}
+
+.menuButton:hover,
+.menuButton[aria-expanded="true"] {
+  background: rgba(120, 100, 90, 0.08);
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 180px;
+  padding: 6px;
+  border-radius: var(--radius-button);
+  background: var(--white);
+  box-shadow: 0 10px 24px rgba(60, 40, 30, 0.16);
+}
+
+.menuItem {
+  min-height: var(--tap);
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.menuItem:hover {
+  background: rgba(120, 100, 90, 0.08);
+}
+
+.treeCard {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px;
+}
+
+/* --- Narrow screens: columns stack ----------------------------------------------- */
+@media (max-width: 1100px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+  }
+
+  .results {
+    flex: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .title {
+    flex-basis: 100%;
+    padding-left: 4px;
+  }
+
+  .search {
+    flex: 1 1 100%;
+  }
+}

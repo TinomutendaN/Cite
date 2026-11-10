@@ -73,6 +73,24 @@ class DocumentPage(BaseModel):
     passages: list[PagePassage]
 
 
+class SearchHit(BaseModel):
+    """One passage found by GET /api/search, with a one-sentence snippet to show."""
+
+    chunk_id: int
+    document_id: str
+    title: str
+    page: int
+    section: str | None
+    match_type: MatchType
+    snippet: str
+    highlights: list[tuple[int, int]]  # (start, end) character offsets into snippet
+
+
+class SearchResponse(BaseModel):
+    query: str
+    results: list[SearchHit]
+
+
 class LimitError(BaseModel):
     """Body of a 429 response."""
 

@@ -82,7 +82,7 @@ export default function SourcePanel({ source, sources, onSelect, onClose }: Sour
           })}
         </div>
 
-        <Link href={documentHref(source.document_id, source.page)} className={`btn-secondary ${styles.open}`}>
+        <Link href={documentHref(source.document_id, source.page, source.chunk_id)} className={`btn-secondary ${styles.open}`}>
           Open full document
           <ArrowUpRight size={14} aria-hidden />
         </Link>

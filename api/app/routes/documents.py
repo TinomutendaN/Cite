@@ -1,9 +1,58 @@
-from fastapi import APIRouter, HTTPException
+import logging
+from typing import Annotated
+
+from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
 
 from app.db import connect
-from app.models import DocumentPage, DocumentSummary, PagePassage
+from app.llm import embed
+from app.models import ApiError, DocumentPage, DocumentSummary, PagePassage, SearchHit, SearchResponse
+from app.search import build_snippets, hybrid_search
+
+log = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api")
+
+SEARCH_RESULTS = 8
+
+
+@router.get("/search", response_model=SearchResponse, responses={502: {"model": ApiError}})
+def search(q: Annotated[str, Query(min_length=1, max_length=200)]):
+    """Hybrid search for the Documents page. Not a question: it isn't counted against
+    the daily limit and isn't written to the queries log."""
+    query = q.strip()
+    if not query:
+        return SearchResponse(query=q, results=[])
+    try:
+        qvec = embed([query])[0]
+        with connect() as conn:
+            results = hybrid_search(query, SEARCH_RESULTS, conn=conn, qvec=qvec)
+            snippets = build_snippets(results, query, qvec, conn)
+    except Exception:
+        log.exception("Search failed")
+        return JSONResponse(
+            status_code=502,
+            content=ApiError(
+                error="search_error", message="Search isn't working right now. Please try again."
+            ).model_dump(),
+        )
+
+    return SearchResponse(
+        query=query,
+        results=[
+            SearchHit(
+                chunk_id=r.chunk_id,
+                document_id=r.document_id,
+                title=r.title,
+                page=r.page,
+                section=r.section,
+                match_type=r.match_type,
+                snippet=s.text,
+                highlights=s.highlights,
+            )
+            for r, s in zip(results, snippets)
+        ],
+    )
 
 
 @router.get("/documents", response_model=list[DocumentSummary])

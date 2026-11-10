@@ -10,13 +10,23 @@
   margin-top: 8px;
 }
 
+/* Folder row: a button that opens or closes the folder. */
 .folder {
   display: flex;
   align-items: center;
   gap: 16px;
-  min-height: 40px;
+  width: calc(100% + 16px);
+  min-height: var(--tap);
+  margin: 0 -8px;
+  padding: 0 8px;
+  border-radius: 10px;
   font-size: 14px;
+  text-align: left;
   color: var(--text);
+}
+
+.folder:hover {
+  background: rgba(255, 255, 255, 0.45);
 }
 
 .folderIcon {
@@ -40,12 +50,19 @@
   background: rgba(255, 255, 255, 0.45);
 }
 
+/* The document being read. */
+.active,
+.active:hover {
+  background: rgba(120, 100, 90, 0.1);
+  font-weight: 600;
+}
+
 .docIcon {
   flex: none;
   color: var(--text-secondary);
 }
 
-/* Full number of documents in a folder when only some are listed. */
+/* Number of documents in a closed folder. */
 .count {
   margin-left: -8px;
   font-size: 13px;

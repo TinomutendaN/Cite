@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import { apiGet } from "@/lib/api";
 import type { DocumentPage, DocumentSummary } from "@/types/api";
 
-type Loadable<T> = { data: T | null; error: boolean; loading: boolean };
+export type Loadable<T> = { data: T | null; error: boolean; loading: boolean };
 
-function useGet<T>(path: string | null): Loadable<T> {
+/** GET a path, ignoring results for older paths. Pass null to load nothing. */
+export function useGet<T>(path: string | null): Loadable<T> {
   const [state, setState] = useState<{ path: string | null; data: T | null; error: boolean }>({
     path: null,
     data: null,

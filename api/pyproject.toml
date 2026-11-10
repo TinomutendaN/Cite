@@ -1,0 +1,15 @@
+[project]
+name = "cite-api"
+version = "0.1.0"
+requires-python = ">=3.12"
+# Same list as requirements.txt (the local Dockerfile uses that file).
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "psycopg[binary]",
+    "openai",
+    "anthropic",
+]
+
+[tool.vercel]
+entrypoint = "app.main:app"

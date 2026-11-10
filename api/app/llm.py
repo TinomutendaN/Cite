@@ -82,6 +82,20 @@ def get_provider(conn) -> str:
     return provider
 
 
+def ollama_available() -> bool:
+    """Ollama only runs where OLLAMA_BASE_URL is set (local / self-hosted), never on the deployed site."""
+    return bool(OLLAMA_BASE_URL)
+
+
+def resolve_provider(conn, requested: str | None) -> str:
+    """The visitor's own choice from the Admin page, if it can be used; otherwise the settings default."""
+    if requested in PROVIDERS and (requested != "ollama" or ollama_available()):
+        return requested
+    if requested:
+        log.info("Requested provider %r can't be used; using the default", requested)
+    return get_provider(conn)
+
+
 def model_for(provider: str) -> str:
     return {"openai": OPENAI_MODEL, "anthropic": ANTHROPIC_MODEL, "ollama": OLLAMA_MODEL}[provider]
 

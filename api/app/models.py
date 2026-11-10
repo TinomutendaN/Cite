@@ -1,5 +1,6 @@
 """Request and response shapes. Mirrored in web/types/api.ts; keep the two in sync."""
 
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -10,6 +11,9 @@ MatchType = Literal["exact", "meaning"]
 
 class AskRequest(BaseModel):
     question: str = Field(min_length=1, max_length=500)
+    # The visitor's choice from the Admin page. A plain str so an unknown or
+    # unavailable value falls back to the default instead of failing.
+    provider: str | None = Field(default=None, max_length=20)
 
     model_config = {"str_strip_whitespace": True}
 
@@ -39,8 +43,10 @@ class AskResponse(BaseModel):
 class UsageResponse(BaseModel):
     questions_left: int
     daily_limit: int
-    provider: Provider  # the answer model currently chosen on the Admin page
+    provider: Provider  # the site default; a visitor's own choice overrides it
     model: str
+    models: dict[Provider, str]  # model name for each provider
+    ollama_available: bool  # the local model can only be chosen when self-hosted
 
 
 Category = Literal["policies", "contracts", "patient-materials"]
@@ -89,6 +95,33 @@ class SearchHit(BaseModel):
 class SearchResponse(BaseModel):
     query: str
     results: list[SearchHit]
+
+
+class AdminSummary(BaseModel):
+    """GET /api/admin/summary: site-wide figures for today (the same day as the limits)."""
+
+    questions_today: int
+    avg_latency_ms: int | None
+    cost_today_usd: float
+    cap_used: int
+    daily_cap: int
+    cap_reached: bool
+
+
+class AdminQuery(BaseModel):
+    id: int
+    created_at: datetime
+    question: str
+    provider: Provider
+    model: str
+    latency_ms: int | None
+    cost_usd: float
+
+
+class AdminQueriesResponse(BaseModel):
+    """GET /api/admin/queries: this visitor's latest questions, newest first."""
+
+    queries: list[AdminQuery]
 
 
 class LimitError(BaseModel):

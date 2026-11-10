@@ -4,9 +4,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from app import rag, usage
-from app.config import VISITOR_DAILY_LIMIT
+from app.config import PROVIDERS, VISITOR_DAILY_LIMIT
 from app.db import connect
-from app.llm import get_provider, model_for
+from app.llm import get_provider, model_for, ollama_available, resolve_provider
 from app.models import ApiError, AskRequest, AskResponse, LimitError, UsageResponse
 
 log = logging.getLogger(__name__)
@@ -31,7 +31,9 @@ def ask(body: AskRequest, request: Request):
             )
 
         try:
-            answer = rag.answer(body.question, conn=conn)
+            answer = rag.answer(
+                body.question, provider=resolve_provider(conn, body.provider), conn=conn
+            )
         except Exception:
             log.exception("Answering failed")
             usage.refund(conn, vh)
@@ -66,4 +68,6 @@ def get_usage(request: Request):
         daily_limit=VISITOR_DAILY_LIMIT,
         provider=provider,
         model=model_for(provider),
+        models={p: model_for(p) for p in PROVIDERS},
+        ollama_available=ollama_available(),
     )

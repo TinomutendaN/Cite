@@ -1,0 +1,414 @@
+/* Centre (figures + recent questions) + right column (settings). The sidebar comes from the (app) layout. */
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: var(--space);
+  height: 100%;
+  min-height: calc(100dvh - 2 * var(--space));
+}
+
+.centre {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* --- Header ---------------------------------------------------------------------- */
+.header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 66px;
+  padding: 0 10px 0 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.today {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0 16px;
+  border-radius: var(--radius-button);
+  background: var(--white);
+  box-shadow: 0 1px 2px rgba(60, 40, 30, 0.08);
+  font-size: 14px;
+}
+
+/* --- Summary cards --------------------------------------------------------------- */
+.stats {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  min-height: 141px;
+  padding: 18px 20px 16px;
+  border-radius: var(--radius-card-sm);
+}
+
+.statTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.statLabel {
+  padding-top: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.statIcon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: var(--white);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgba(60, 40, 30, 0.08);
+}
+
+.statValue {
+  margin-top: 8px;
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.statCaption {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+/* --- Recent questions ------------------------------------------------------------ */
+.recent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 16px 16px;
+}
+
+.recentTitle {
+  padding: 0 6px;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 700;
+}
+
+.tableWrap {
+  min-height: 0;
+  overflow: auto;
+  border-radius: 12px;
+  background: var(--white);
+  box-shadow: 0 1px 2px rgba(60, 40, 30, 0.06);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  height: 42px;
+  padding: 0 18px;
+  background: var(--white);
+  border-bottom: 1px solid #ece6e0;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-label);
+  white-space: nowrap;
+}
+
+.table td {
+  height: 50px;
+  padding: 12px 18px;
+  vertical-align: middle;
+}
+
+.table tbody tr + tr td {
+  border-top: 1px solid #ece6e0;
+}
+
+.colTime {
+  width: 106px;
+  white-space: nowrap;
+}
+
+.question {
+  min-width: 200px;
+  color: var(--text);
+}
+
+.colModel {
+  width: 150px;
+}
+
+.num {
+  width: 90px;
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+.table th.num:last-child,
+.table td.num:last-child {
+  width: 126px;
+}
+
+.modelChip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.status {
+  padding: 18px;
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+/* --- Right column ---------------------------------------------------------------- */
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Keeps the cap card at the bottom of the column. */
+.side > :last-child {
+  margin-top: auto;
+}
+
+.sideTitle {
+  flex: none;
+  display: flex;
+  align-items: center;
+  min-height: 56px;
+  padding: 0 16px;
+}
+
+.sideTitle h2 {
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.cardTitle {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.note {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+/* Model switch */
+.modelCard {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 60px;
+  padding: 10px 14px;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.option:hover:not(.optionDisabled) {
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.optionChecked {
+  border-color: var(--orange);
+  background: var(--white);
+}
+
+.optionChecked:hover {
+  background: var(--white) !important;
+}
+
+.optionDisabled {
+  cursor: default;
+}
+
+.optionDisabled .optionText {
+  opacity: 0.55;
+}
+
+.radio {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 6px;
+  accent-color: var(--text);
+  cursor: inherit;
+}
+
+.optionText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.optionName {
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.optionDesc {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--text-secondary);
+}
+
+/* Daily usage cap */
+.capCard {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+}
+
+.capTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.capChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 22px;
+  padding: 0 9px;
+  border-radius: 11px;
+  background: var(--success-bg);
+  color: var(--success-text);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.capChipReached {
+  background: var(--orange-highlight);
+  color: var(--on-orange);
+}
+
+.capRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--text-secondary);
+}
+
+.bar {
+  height: 4px;
+  margin: 12px 0 14px;
+  border-radius: 2px;
+  background: rgba(60, 40, 30, 0.1);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--dark);
+  transition: width 0.3s ease;
+}
+
+/* --- Narrow screens -------------------------------------------------------------- */
+@media (max-width: 1100px) {
+  .page {
+    grid-template-columns: minmax(0, 1fr);
+    height: auto;
+    min-height: 0;
+  }
+
+  .recent {
+    flex: none;
+  }
+
+  .side > :last-child {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .stats {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .stat {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .header {
+    padding: 0 10px 0 16px;
+  }
+}

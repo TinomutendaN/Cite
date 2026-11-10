@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS queries (
 );
 
 CREATE INDEX IF NOT EXISTS queries_created_at_idx ON queries (created_at DESC);
+CREATE INDEX IF NOT EXISTS queries_visitor_idx    ON queries (visitor_hash, created_at DESC);
 
 -- Per-visitor daily counter for VISITOR_DAILY_LIMIT.
 CREATE TABLE IF NOT EXISTS usage (

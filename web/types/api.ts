@@ -7,6 +7,8 @@ export type MatchType = "exact" | "meaning";
 
 export interface AskRequest {
   question: string;
+  /** The visitor's choice from the Admin page. The backend falls back to its default if it can't be used. */
+  provider?: Provider;
 }
 
 /** A passage cited in an answer. `n` is the number used in the answer text: [1], [2], ... */
@@ -33,12 +35,42 @@ export interface AskResponse {
   model: string;
 }
 
-/** GET /api/usage. `provider` and `model` are the answer model currently chosen on the Admin page. */
+/** GET /api/usage. `provider` and `model` are the site default; a visitor's own choice overrides it. */
 export interface UsageResponse {
   questions_left: number;
   daily_limit: number;
   provider: Provider;
   model: string;
+  /** Model name for each provider. */
+  models: Record<Provider, string>;
+  /** The local model can only be chosen when self-hosted. */
+  ollama_available: boolean;
+}
+
+/** GET /api/admin/summary: site-wide figures for today (UTC, the same day as the limits). */
+export interface AdminSummary {
+  questions_today: number;
+  avg_latency_ms: number | null;
+  cost_today_usd: number;
+  cap_used: number;
+  daily_cap: number;
+  cap_reached: boolean;
+}
+
+export interface AdminQuery {
+  id: number;
+  /** ISO timestamp. */
+  created_at: string;
+  question: string;
+  provider: Provider;
+  model: string;
+  latency_ms: number | null;
+  cost_usd: number;
+}
+
+/** GET /api/admin/queries: this visitor's latest questions, newest first. */
+export interface AdminQueriesResponse {
+  queries: AdminQuery[];
 }
 
 /** Folder names under data/documents. */

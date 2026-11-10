@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { useChat, type ChatMessage } from "@/components/ChatProvider";
 import { ApiRequestError, apiPost } from "@/lib/api";
-import type { AskResponse, LimitError } from "@/types/api";
+import type { AskRequest, AskResponse, LimitError } from "@/types/api";
 
 const ERROR_TEXT = "Something went wrong while answering.";
 
@@ -17,7 +17,7 @@ export function useAsk() {
     setIsLoading,
     setMessages,
     setUsage,
-    setModel,
+    chosenProvider,
     limitReached,
     setLimitReached,
     usage,
@@ -34,13 +34,14 @@ export function useAsk() {
 
       let reply: ChatMessage;
       try {
-        const res = await apiPost<AskResponse>("/api/ask", { question }, controller.signal);
+        // The visitor's own model choice; the backend falls back to its default if it can't be used.
+        const body: AskRequest = { question, provider: chosenProvider ?? undefined };
+        const res = await apiPost<AskResponse>("/api/ask", body, controller.signal);
         reply = res.found
           ? { id: newId(), kind: "answer", text: res.answer, sources: res.sources }
           : { id: newId(), kind: "not_found" };
         // The daily limit only comes from GET /api/usage; until it has loaded there is nothing to update.
         setUsage((u) => (u ? { ...u, questionsLeft: res.questions_left } : u));
-        setModel({ provider: res.provider, model: res.model });
       } catch (err) {
         // "New chat" cancelled this question: drop the reply.
         if (controller.signal.aborted) return;
@@ -63,7 +64,7 @@ export function useAsk() {
       setMessages((m) => [...m, reply]);
       setIsLoading(false);
     },
-    [pendingRequestRef, setIsLoading, setMessages, setUsage, setModel, setLimitReached],
+    [pendingRequestRef, setIsLoading, setMessages, setUsage, chosenProvider, setLimitReached],
   );
 
   /** Ask a new question. Ignored while another is in flight or once the limit is reached. */

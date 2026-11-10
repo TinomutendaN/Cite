@@ -1,4 +1,4 @@
-import { ChartColumn, FileSearch, FolderOpen, MessageSquare, type LucideIcon } from "lucide-react";
+import { ChartColumn, File, MessageSquare, PanelsTopLeft, type LucideIcon } from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -8,7 +8,7 @@ export type NavItem = {
 
 export const NAV_ITEMS: NavItem[] = [
   { label: "Ask", href: "/ask", icon: MessageSquare },
-  { label: "Documents", href: "/documents", icon: FolderOpen },
-  { label: "Extract", href: "/extract", icon: FileSearch },
+  { label: "Documents", href: "/documents", icon: File },
+  { label: "Extract", href: "/extract", icon: PanelsTopLeft },
   { label: "Admin", href: "/admin", icon: ChartColumn },
 ];

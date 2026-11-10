@@ -1,0 +1,53 @@
+.tree {
+  list-style: none;
+}
+
+.group ul {
+  list-style: none;
+}
+
+.group + .group {
+  margin-top: 8px;
+}
+
+.folder {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 40px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.folderIcon {
+  flex: none;
+  color: var(--folder);
+}
+
+.doc {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: var(--tap);
+  margin: 0 -8px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.doc:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.docIcon {
+  flex: none;
+  color: var(--text-secondary);
+}
+
+.docTitle {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

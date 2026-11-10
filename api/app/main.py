@@ -2,10 +2,11 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.db import connect
-from app.routes import ask
+from app.routes import ask, documents
 
 app = FastAPI(title="Cite")
 app.include_router(ask.router)
+app.include_router(documents.router)
 
 
 @app.get("/api/health")

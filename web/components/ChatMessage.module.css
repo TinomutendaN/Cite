@@ -1,0 +1,233 @@
+/* --- User question -------------------------------------------------------------- */
+.userRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.userBubble {
+  max-width: min(560px, 80%);
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 15px;
+  line-height: 22px;
+  overflow-wrap: anywhere;
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 4px 12px rgba(60, 40, 30, 0.08);
+  color: var(--text-label);
+}
+
+/* --- Dark bubbles --------------------------------------------------------------- */
+.bubble {
+  width: fit-content;
+  max-width: min(720px, 92%);
+  background: var(--dark);
+  color: #f5f1ec;
+  box-shadow: 0 10px 24px rgba(40, 30, 20, 0.16);
+}
+
+.answer {
+  padding: 18px;
+  border-radius: 16px;
+}
+
+.answerText {
+  font-size: 15px;
+  line-height: 25px;
+}
+
+.answerText > * + * {
+  margin-top: 10px;
+}
+
+.answerText ul,
+.answerText ol {
+  padding-left: 20px;
+}
+
+.answerText li + li {
+  margin-top: 4px;
+}
+
+.answerText strong {
+  font-weight: 700;
+  color: var(--white);
+}
+
+/* Quoted passage inside an answer. */
+.quote {
+  margin-top: 16px;
+  padding: 4px 6px 16px 16px;
+  border-radius: 12px;
+  background: var(--dark-inner);
+  border: 1px solid var(--dark-inner-border);
+}
+
+.quoteHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #cfc8c1;
+}
+
+.quoteActions {
+  display: flex;
+  flex: none;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: #e6e0da;
+  transition: background-color 0.15s ease;
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.quoteText {
+  margin-top: 2px;
+  padding-right: 10px;
+  font-size: 14px;
+  line-height: 22px;
+  color: #f5f1ec;
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+/* "Not found", limit and error replies. */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 20px 14px 18px;
+  border-radius: 14px;
+}
+
+.noticeIcon {
+  display: flex;
+  margin-top: 3px;
+  color: var(--orange-light);
+}
+
+.noticeTitle {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 22px;
+}
+
+.noticeBody {
+  font-size: 14px;
+  line-height: 22px;
+  color: #d6d0ca;
+}
+
+.link {
+  color: var(--orange-light);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.link:hover {
+  color: var(--orange-highlight);
+}
+
+.cites {
+  white-space: nowrap;
+}
+
+.retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  margin-top: 10px;
+  padding: 0 16px;
+  border-radius: var(--radius-button);
+  background: var(--orange);
+  color: var(--on-orange);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.retry:hover:not(:disabled) {
+  background: var(--orange-light);
+}
+
+.retry:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* "Searching the documents…" */
+.thinking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  color: #d6d0ca;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--orange-light);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots span {
+    animation: none;
+    opacity: 0.8;
+  }
+}

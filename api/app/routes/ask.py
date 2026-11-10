@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 from app import rag, usage
 from app.config import VISITOR_DAILY_LIMIT
 from app.db import connect
+from app.llm import get_provider, model_for
 from app.models import ApiError, AskRequest, AskResponse, LimitError, UsageResponse
 
 log = logging.getLogger(__name__)
@@ -59,4 +60,10 @@ def ask(body: AskRequest, request: Request):
 def get_usage(request: Request):
     with connect(autocommit=True) as conn:
         left = usage.questions_left(conn, usage.visitor_hash(request))
-    return UsageResponse(questions_left=left, daily_limit=VISITOR_DAILY_LIMIT)
+        provider = get_provider(conn)
+    return UsageResponse(
+        questions_left=left,
+        daily_limit=VISITOR_DAILY_LIMIT,
+        provider=provider,
+        model=model_for(provider),
+    )

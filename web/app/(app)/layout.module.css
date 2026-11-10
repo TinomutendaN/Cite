@@ -1,5 +1,6 @@
 .shell {
   min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   grid-template-columns: 230px minmax(0, 1fr);
   gap: var(--space);
@@ -11,6 +12,16 @@
 
 .main {
   min-width: 0;
+  min-height: 0;
+}
+
+/* On a desktop-sized window the app fills exactly one screen, like the designs:
+   the sidebar spreads to full height and each screen scrolls inside its own columns. */
+@media (min-width: 1101px) and (min-height: 680px) {
+  .shell {
+    height: 100vh;
+    height: 100dvh;
+  }
 }
 
 @media (max-width: 900px) {

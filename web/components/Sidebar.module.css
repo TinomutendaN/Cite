@@ -1,31 +1,57 @@
+/* Three groups: Cite card at the top, menu + "Back to home" in the middle,
+   "Free demo" at the bottom. */
 .sidebar {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: var(--space);
+  min-height: 0;
 }
 
 .card {
-  padding: 16px;
   border-radius: var(--radius-card);
 }
 
-.fullWidth {
-  width: 100%;
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 16px;
 }
 
 .brand {
   display: flex;
   align-items: center;
+  gap: 12px;
   min-height: var(--tap);
-  margin-bottom: 12px;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
+  font-size: 18px;
+  color: var(--text);
 }
 
-.menuLabel {
-  display: block;
-  padding: 0 12px 8px;
+.logo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--dark);
+  color: var(--white);
+}
+
+.newChat {
+  width: 100%;
+  font-weight: 400;
+  box-shadow: 0 4px 12px rgba(204, 141, 81, 0.35);
+}
+
+.middle {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.menuCard {
+  padding: 11px;
 }
 
 .menu {
@@ -38,57 +64,84 @@
 .menuItem {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   min-height: var(--tap);
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: var(--radius-button);
   font-size: 15px;
-  color: var(--text-secondary);
+  color: var(--text);
   transition: background-color 0.15s ease;
 }
 
 .menuItem:hover {
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(120, 100, 90, 0.06);
 }
 
 .active,
 .active:hover {
-  background: var(--white);
-  color: var(--text);
+  background: rgba(120, 100, 90, 0.1);
   font-weight: 600;
-  box-shadow: 0 1px 2px rgba(60, 40, 30, 0.08);
 }
 
 .backHome {
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: var(--tap);
+  gap: 15px;
+  min-height: 54px;
+  padding: 0 25px;
   font-size: 15px;
-  color: var(--text-secondary);
-}
-
-.backHome:hover {
   color: var(--text);
 }
 
+.backHome:hover {
+  background: rgba(255, 255, 255, 0.45);
+}
+
 .freeDemo {
-  background: var(--orange);
+  padding: 20px;
+  border-radius: var(--radius-card);
+  background: linear-gradient(160deg, #dca56e, #c98a50);
+  box-shadow: 0 8px 24px rgba(204, 141, 81, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.25);
   color: var(--on-orange);
-  font-size: 14px;
-  line-height: 1.4;
 }
 
 .freeDemoTitle {
-  display: flex;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.freeDemoText {
+  margin: 8px 0 16px;
+  font-size: 15px;
+  line-height: 22px;
+  color: #2b231c;
+}
+
+.builtButton {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 6px;
-  font-weight: 700;
+  min-height: var(--tap);
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--text);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  transition: background-color 0.15s ease;
+}
+
+.builtButton:hover {
+  background: #3a3532;
 }
 
 @media (max-width: 900px) {
   .sidebar {
+    gap: 12px;
+  }
+
+  .middle {
     gap: 12px;
   }
 }

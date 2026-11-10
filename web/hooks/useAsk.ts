@@ -1,0 +1,91 @@
+"use client";
+
+import { useCallback } from "react";
+import { useChat, type ChatMessage } from "@/components/ChatProvider";
+import { ApiRequestError, apiPost } from "@/lib/api";
+import type { AskResponse, LimitError } from "@/types/api";
+
+const ERROR_TEXT = "Something went wrong while answering.";
+
+let nextId = 0;
+const newId = () => `m${Date.now().toString(36)}-${nextId++}`;
+
+/** Sends questions to POST /api/ask and adds the replies to the chat. */
+export function useAsk() {
+  const {
+    isLoading,
+    setIsLoading,
+    setMessages,
+    setUsage,
+    setModel,
+    limitReached,
+    setLimitReached,
+    usage,
+    pendingRequestRef,
+  } = useChat();
+
+  const outOfQuestions = limitReached || usage?.questionsLeft === 0;
+
+  const ask = useCallback(
+    async (question: string) => {
+      const controller = new AbortController();
+      pendingRequestRef.current = controller;
+      setIsLoading(true);
+
+      let reply: ChatMessage;
+      try {
+        const res = await apiPost<AskResponse>("/api/ask", { question }, controller.signal);
+        reply = res.found
+          ? { id: newId(), kind: "answer", text: res.answer, sources: res.sources }
+          : { id: newId(), kind: "not_found" };
+        // The daily limit only comes from GET /api/usage; until it has loaded there is nothing to update.
+        setUsage((u) => (u ? { ...u, questionsLeft: res.questions_left } : u));
+        setModel({ provider: res.provider, model: res.model });
+      } catch (err) {
+        // "New chat" cancelled this question: drop the reply.
+        if (controller.signal.aborted) return;
+        if (err instanceof ApiRequestError && err.status === 429) {
+          const body = err.body as LimitError | null;
+          reply = {
+            id: newId(),
+            kind: "limit",
+            text: body?.message ?? "You've used today's free questions. Come back tomorrow to ask more.",
+          };
+          setLimitReached(true);
+          setUsage((u) => (u ? { ...u, questionsLeft: 0 } : u));
+        } else {
+          reply = { id: newId(), kind: "error", text: ERROR_TEXT, question };
+        }
+      }
+
+      if (pendingRequestRef.current !== controller) return;
+      pendingRequestRef.current = null;
+      setMessages((m) => [...m, reply]);
+      setIsLoading(false);
+    },
+    [pendingRequestRef, setIsLoading, setMessages, setUsage, setModel, setLimitReached],
+  );
+
+  /** Ask a new question. Ignored while another is in flight or once the limit is reached. */
+  const send = useCallback(
+    (text: string) => {
+      const question = text.trim();
+      if (!question || isLoading || outOfQuestions) return;
+      setMessages((m) => [...m, { id: newId(), kind: "user", text: question }]);
+      void ask(question);
+    },
+    [ask, isLoading, outOfQuestions, setMessages],
+  );
+
+  /** Resend the question behind an error reply, replacing that reply. */
+  const retry = useCallback(
+    (errorId: string, question: string) => {
+      if (isLoading || outOfQuestions) return;
+      setMessages((m) => m.filter((msg) => msg.id !== errorId));
+      void ask(question);
+    },
+    [ask, isLoading, outOfQuestions, setMessages],
+  );
+
+  return { send, retry, isLoading, outOfQuestions };
+}

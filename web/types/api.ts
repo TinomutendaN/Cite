@@ -33,10 +33,42 @@ export interface AskResponse {
   model: string;
 }
 
-/** GET /api/usage */
+/** GET /api/usage. `provider` and `model` are the answer model currently chosen on the Admin page. */
 export interface UsageResponse {
   questions_left: number;
   daily_limit: number;
+  provider: Provider;
+  model: string;
+}
+
+/** Folder names under data/documents. */
+export type Category = "policies" | "contracts" | "patient-materials";
+
+/** GET /api/documents (a flat list, ordered by category then id). */
+export interface DocumentSummary {
+  id: string;
+  title: string;
+  category: Category;
+  doc_type: string;
+  page_count: number;
+}
+
+export interface PagePassage {
+  chunk_id: number;
+  paragraph: number;
+  section: string | null;
+  content: string;
+}
+
+/** GET /api/documents/{id}/pages/{page}: one page's passages in reading order. */
+export interface DocumentPage {
+  document_id: string;
+  title: string;
+  category: Category;
+  doc_type: string;
+  page: number;
+  page_count: number;
+  passages: PagePassage[];
 }
 
 /** Body of a 429 response from POST /api/ask. */

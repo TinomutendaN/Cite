@@ -1,0 +1,58 @@
+.meter {
+  flex: none;
+  padding: 13px 16px 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.ring {
+  flex: none;
+  transform: rotate(-90deg);
+}
+
+.ringTrack,
+.ringFill {
+  fill: none;
+  stroke-width: 1.6;
+}
+
+.ringTrack {
+  stroke: var(--text);
+}
+
+.ringFill {
+  stroke: var(--orange);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.count {
+  flex: 1;
+}
+
+.percent {
+  color: var(--text-secondary);
+}
+
+.bar {
+  height: 4px;
+  margin-top: 12px;
+  border-radius: 2px;
+  background: rgba(60, 40, 30, 0.1);
+  overflow: hidden;
+}
+
+.fill {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--dark);
+  transition: width 0.3s ease;
+}

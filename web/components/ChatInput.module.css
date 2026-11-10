@@ -1,0 +1,93 @@
+.box {
+  flex: none;
+  padding: 14px 14px 14px 16px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--white);
+  box-shadow: 0 1px 2px rgba(60, 40, 30, 0.06);
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.docsIcon {
+  color: #3f8a5c;
+}
+
+.modelIcon {
+  color: var(--orange);
+}
+
+.modelName {
+  color: var(--text-secondary-2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 16px;
+  color: var(--text);
+}
+
+.input::placeholder {
+  color: #8a7e74;
+}
+
+.input:focus {
+  outline: none;
+}
+
+.box:focus-within {
+  border-color: rgba(204, 141, 81, 0.55);
+}
+
+.input:disabled {
+  cursor: not-allowed;
+}
+
+.send {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  background: var(--orange);
+  color: var(--on-orange);
+  box-shadow: 0 4px 12px rgba(204, 141, 81, 0.35);
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.send:hover:not(:disabled) {
+  background: var(--orange-light);
+}
+
+.send:disabled {
+  opacity: 0.55;
+  cursor: default;
+  box-shadow: none;
+}

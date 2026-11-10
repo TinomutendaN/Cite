@@ -39,6 +39,38 @@ class AskResponse(BaseModel):
 class UsageResponse(BaseModel):
     questions_left: int
     daily_limit: int
+    provider: Provider  # the answer model currently chosen on the Admin page
+    model: str
+
+
+Category = Literal["policies", "contracts", "patient-materials"]
+
+
+class DocumentSummary(BaseModel):
+    id: str
+    title: str
+    category: Category
+    doc_type: str
+    page_count: int
+
+
+class PagePassage(BaseModel):
+    chunk_id: int
+    paragraph: int
+    section: str | None
+    content: str
+
+
+class DocumentPage(BaseModel):
+    """GET /api/documents/{id}/pages/{page}: one page's passages in reading order."""
+
+    document_id: str
+    title: str
+    category: Category
+    doc_type: str
+    page: int
+    page_count: int
+    passages: list[PagePassage]
 
 
 class LimitError(BaseModel):

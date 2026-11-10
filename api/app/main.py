@@ -2,8 +2,10 @@ from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from app.db import connect
+from app.routes import ask
 
 app = FastAPI(title="Cite")
+app.include_router(ask.router)
 
 
 @app.get("/api/health")

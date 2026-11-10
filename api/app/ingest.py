@@ -27,6 +27,7 @@ import pypdf
 from pypdf import mult
 
 from app.config import DOCUMENTS_DIR
+from app.db import vector_literal
 
 SHORT_PASSAGE_WORDS = 30  # merge paragraphs shorter than this with the next one
 LONG_PASSAGE_WORDS = 250  # split tables longer than this; flag anything longer in --dry-run
@@ -311,10 +312,6 @@ def embedding_text(title: str, section: str | None, content: str) -> str:
 
 
 # --- Saving ------------------------------------------------------------------------
-
-
-def vector_literal(vector: list[float]) -> str:
-    return "[" + ",".join(repr(x) for x in vector) + "]"
 
 
 def save_document(conn, doc: dict, passages: list[Passage], vectors: list[list[float]]) -> None:

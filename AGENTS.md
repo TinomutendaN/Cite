@@ -26,7 +26,7 @@ It is a portfolio demo. It comes pre-loaded with sample company documents (HR po
 
 ### Dependency limit
 
-- Python: fastapi, uvicorn, psycopg, openai, anthropic.
+- Python: fastapi, uvicorn, psycopg, openai, anthropic, pypdf (reads the sample PDFs).
 - JavaScript: next (with react and react-dom), lucide-react.
 - Keep the total under 10. Ask before adding any new dependency.
 - Do not add: LangChain, Redis, an ORM, Tailwind, a global state library, or charting libraries.
@@ -39,7 +39,7 @@ cite/
 ├── README.md
 ├── docker-compose.yml         # local development only
 ├── .env.example
-├── data/documents/            # sample company documents, in Markdown
+├── data/documents/            # sample company documents, as PDFs (git-ignored)
 ├── api/                       # FastAPI backend (Vercel project #2)
 │   └── app/
 │       ├── main.py, config.py, db.py, schema.sql, models.py
@@ -62,6 +62,42 @@ cite/
     ├── types/
     └── public/
 ```
+
+## Sample documents
+
+The fictional company is Kestrel Valley Health Partners (KVHP). `data/documents/` holds 14 PDFs, plus `DEMO_QUESTIONS.md` (starter questions and expected answers). The folder name is the document's category:
+
+- `policies/`: numbered HR, privacy, security and safety policies (`POL-101` … `POL-402`) and the Employee Handbook (`HR-HB-2026`).
+- `contracts/`: 4 vendor contracts (`KVHP-SC-…` supply, `KVHP-IT-…` managed IT, `KVHP-BAA-…` business associate, `KVHP-NDA-…` NDA). These are what the Extract page uses.
+- `patient-materials/`: the Kestrel Connect patient portal guide (`PX-GUIDE-07`).
+
+### PDF format
+
+All PDFs are generated the same way (ReportLab, Helvetica only, letter size). Don't edit them; `api/app/ingest.py` depends on this format.
+
+- **ID**: PDF metadata `/Subject` (e.g. `POL-114`). Most filenames also start with it.
+- **Title**: PDF metadata `/Title`. Policy titles start with the ID (`POL-114 Sick Leave and Return to Work`); ingest strips it.
+- **Pages**: real PDF pages. Each page has a running header (company name, `ID | Version`) at the top and a footer (disclaimer, `Page N`) at the bottom. Ingest skips both.
+- **Paragraphs**: every paragraph, table cell and list marker is its own PDF text object. Lines are hard-wrapped with no blank lines, so paragraphs come from text objects, not from plain extracted text.
+- **Styles** tell the role of each block:
+
+| Style | Meaning |
+|---|---|
+| Bold 18 / regular 10.5 | Title / subtitle on page 1 (skipped; already in metadata) |
+| Bold 12.5 | Section heading (`4. Sick Leave Allowance`) |
+| Bold 10.5 | Subsection heading (`8.1 Worked example…`, `Revision history`) |
+| 9.5 (regular or bold) | Body paragraph |
+| 8.8, indented | Table cell; header row in bold. Contract signature blocks are also tables. |
+| 8.5, indented | Page-1 details box (Document No., Version, Owner, Effective Date…) |
+| 8.5 at the margin | Small-print note (body paragraph) |
+| 8.0 `\x7f` / 9.0 digit | Bullet / numbered-step marker before a list item |
+
+### How ingest turns them into passages
+
+- One `documents` row per PDF; `doc_type` is Policy, Handbook, Contract or Guide.
+- One passage per paragraph, list item or table, never crossing a page. A passage under ~30 words merges with the next one in the same section on the same page.
+- Tables become one passage, each row written as `Header: value; Header: value`. A table over 250 words is split into groups of rows.
+- Each chunk stores `page`, `paragraph` (number of its first paragraph on the page, headings not counted), `section` (most specific heading) and the clean text. The embedding is made from `"Title, Section: text"`.
 
 ## Folder rules
 
@@ -93,6 +129,7 @@ Every screen follows the Cite design rules: Helvetica, a warm beige background, 
 ## Commands
 
 - Start everything locally: `docker compose up`
-- Load the sample documents locally (run once, after the database is up): `docker compose exec api python -m app.ingest`
-- Load the sample documents into Neon (run once, from the `api/` folder on your laptop): set `DATABASE_URL` to the Neon connection string, then run `python -m app.ingest`
+- Check how the documents are split, without calling OpenAI or the database: `docker compose exec api python -m app.ingest --dry-run` (flags any passage over 250 words)
+- Load the sample documents locally (after the database is up; safe to re-run): `docker compose exec api python -m app.ingest`
+- Load the sample documents into Neon (safe to re-run): `docker compose exec -e DATABASE_URL="<neon direct string>" api python -m app.ingest`. Use Neon's direct (non-pooled) connection string for this bulk load; the deployed app uses the pooled one.
 - Deploy: push to GitHub; both Vercel projects deploy automatically

@@ -30,23 +30,28 @@ export default function DemoVideo() {
       ) : null}
 
       {!started && (
-        <div className={styles.overlay}>
-          <span className={styles.dots} aria-hidden="true">
-            <i />
-            <i />
-            <i />
-          </span>
+        <div className={`${styles.overlay} ${src ? styles.scrim : ""}`} onClick={src ? play : undefined}>
+          {!src && (
+            <span className={styles.dots} aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+          )}
           <button
             type="button"
             className={styles.play}
-            onClick={src ? play : undefined}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (src) play();
+            }}
             aria-disabled={!src}
             aria-label={src ? "Play demo video" : "Demo video coming soon"}
             title={src ? "Play demo video" : "Demo video coming soon"}
           >
             <Play size={18} fill="currentColor" strokeWidth={0} />
           </button>
-          <span className={styles.label}>[1-minute demo video]</span>
+          {!src && <span className={styles.label}>[1-minute demo video]</span>}
           <span className={styles.duration}>{duration}</span>
         </div>
       )}

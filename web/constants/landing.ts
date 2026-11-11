@@ -12,9 +12,9 @@ export type DemoVideo = {
 };
 
 export const DEMO_VIDEO: DemoVideo = {
-  src: null,
-  poster: null,
-  duration: "1:00",
+  src: "/demo.mp4",
+  poster: "/demo-poster.png",
+  duration: "1:10",
 };
 
 export const HEADLINE = "Ask your company’s documents. See the source for every answer.";
